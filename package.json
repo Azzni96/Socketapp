@@ -1,19 +1,47 @@
 {
-  "name": "socketapp",
-  "version": "1.0.0",
-  "description": "chat room sovellus",
+  "name": "socketapp-enhanced",
+  "version": "2.0.0",
+  "description": "Advanced Socket.IO chat application with timezone support, emoji reactions, image sharing, message editing/deletion",
   "license": "ISC",
-  "author": "",
+  "author": "Azzni96",
   "type": "commonjs",
   "main": "index.js",
+  "keywords": [
+    "socket.io",
+    "chat",
+    "real-time",
+    "websockets",
+    "emoji",
+    "image-sharing",
+    "timezone",
+    "responsive"
+  ],
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon --watch index.js --watch public --watch config.json index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@socket.io/cluster-adapter": "^0.2.2",
     "express": "^4.21.2",
-    "socket.io": "^4.8.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  },
+  "features": {
+    "realTimeMessaging": true,
+    "roomBasedChat": true,
+    "timezoneSupport": true,
+    "emojiReactions": true,
+    "imageSharing": true,
+    "messageEditing": true,
+    "messageDeletion": true,
+    "typingIndicators": true,
+    "responsiveDesign": true,
+    "lightModeOnly": true
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
   }
 }
