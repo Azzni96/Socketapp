@@ -29,7 +29,8 @@ Järjestelmäviestit kertovat, kuka liittyi, poistui tai vaihtoi nimimerkkiä.
 
 Voit aina palata päähuoneeseen (general) napilla Leave.
 
-🗂 Koodin selitys
+## 🗂 Koodin selitys
+
 **1) index.js (palvelin)**
 
 express palvelee staattisia tiedostoja kansiosta public/.
