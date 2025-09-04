@@ -1,3 +1,5 @@
+# Nihad Azzam, Sohaib Ebrahimi , Idriz Berisha
+
 # 💬 Socket.IO Chat -sovellus
 
 Tämä on yksinkertainen reaaliaikainen chat-sovellus,joka on toteutettu
