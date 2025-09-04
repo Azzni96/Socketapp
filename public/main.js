@@ -14,7 +14,9 @@ const sendBtn       = document.getElementById('send');
 const messagesUl    = document.getElementById('messages');
 const roomBadge     = document.getElementById('current-room-display');
 const typingDiv     = document.getElementById('typing');
-const themeToggle   = document.getElementById('theme-toggle');
+
+const leaveBtn  = document.getElementById('leave-btn');
+const quickRooms = document.getElementById('quick-rooms');
 
 // أدوات
 function fmtTime(ms) {
@@ -71,15 +73,6 @@ function appendMessage({ text, nickname, isSystem = false, isSelf = false, times
   scrollToBottom();
 }
 
-// تغيير الثيم
-themeToggle.addEventListener('click', () => {
-  const root = document.documentElement;
-  const curr = root.getAttribute('data-theme') || 'light';
-  const next = curr === 'light' ? 'dark' : 'light';
-  root.setAttribute('data-theme', next);
-  themeToggle.textContent = next === 'dark' ? '☀️ Light' : '🌙 Dark';
-});
-
 // ضبط اللقب
 nicknameInput.addEventListener('change', (e) => {
   myNickname = e.target.value || 'Anonymous';
@@ -99,7 +92,7 @@ messageInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') sendMessage();
 });
 
-// مؤشر الكتابة: أرسل true عندما يكتب و false بعد 500ms من التوقف
+// مؤشر الكتابة
 let typingTimer = null;
 messageInput.addEventListener('input', () => {
   socket.emit('typing', messageInput.value.length > 0);
@@ -156,9 +149,36 @@ socket.on('typing', ({ id, nickname, isTyping }) => {
   }
 });
 
-// عداد المستخدمين في الغرفة (مبسط)
+// عدّاد المستخدمين
 socket.on('room_count', ({ room, count }) => {
   if (room === currentRoom) {
     roomBadge.textContent = `Room: ${room} (${count})`;
   }
 });
+
+// توليد الغرف الجاهزة في المنتصف + التبديل
+function renderChips(list) {
+  quickRooms.innerHTML = '';
+  if (!Array.isArray(list)) return;
+  for (const { room, count } of list) {
+    const chip = document.createElement('span');
+    chip.className = 'chip';
+    chip.dataset.room = room;
+    chip.textContent = `${room} (${count})`;
+    quickRooms.appendChild(chip);
+  }
+}
+quickRooms.addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const room = chip.getAttribute('data-room');
+  socket.emit('switch_room', room);
+});
+
+// استلام القائمة وتحديث الواجهة (يجي من السيرفر عند الاتصال وأي تغيير)
+socket.on('rooms_list', (list) => {
+  renderChips(list);
+});
+
+// زر Leave (يرجع لـ general)
+leaveBtn.addEventListener('click', () => socket.emit('leave_room'));

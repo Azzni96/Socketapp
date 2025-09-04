@@ -9,28 +9,40 @@ app.use(express.static('public'));
 
 const io = new Server(server);
 
-// تتبّع عدد مستخدمي كل غرفة (مبسط)
+// ✅ الغرف المسموح بها فقط (عدّلها لو تحب)
+const ALLOWED_ROOMS = ['general', 'tech', 'sports', 'games'];
+
+// تتبّع عدد مستخدمي كل غرفة (مُهيأة مسبقًا)
 const roomMembers = new Map(); // room -> Set(socketId)
+for (const r of ALLOWED_ROOMS) roomMembers.set(r, new Set());
+
+function isAllowed(room) {
+  return ALLOWED_ROOMS.includes(room);
+}
+
+function getRoomsSummary() {
+  return ALLOWED_ROOMS.map(room => ({
+    room,
+    count: roomMembers.get(room)?.size ?? 0,
+  }));
+}
 
 function joinRoom(socket, room) {
+  if (!isAllowed(room)) {
+    socket.emit('system_message', `Room "${room}" is not allowed`);
+    return false;
+  }
   socket.join(room);
-  if (!roomMembers.has(room)) roomMembers.set(room, new Set());
   roomMembers.get(room).add(socket.id);
-  io.to(room).emit('room_count', {
-    room,
-    count: roomMembers.get(room).size,
-  });
+  io.to(room).emit('room_count', { room, count: roomMembers.get(room).size });
+  return true;
 }
 
 function leaveRoom(socket, room) {
+  if (!isAllowed(room)) return;
   socket.leave(room);
-  if (roomMembers.has(room)) {
-    roomMembers.get(room).delete(socket.id);
-    io.to(room).emit('room_count', {
-      room,
-      count: roomMembers.get(room).size,
-    });
-  }
+  roomMembers.get(room).delete(socket.id);
+  io.to(room).emit('room_count', { room, count: roomMembers.get(room).size });
 }
 
 app.get('/', (req, res) => {
@@ -41,12 +53,14 @@ io.on('connection', (socket) => {
   let nickname = 'Anonymous';
   let currentRoom = 'general';
 
-  // عرف المستخدم بنفسه
   socket.emit('you_are', { id: socket.id });
 
-  // انضمام للغرفة العامة
+  // انضمام افتراضي إلى general
   joinRoom(socket, currentRoom);
   io.to(currentRoom).emit('system_message', `${nickname} joined the chat`);
+
+  // ارسال قائمة الغرف (مع العدّادات) للعميل
+  socket.emit('rooms_list', getRoomsSummary());
 
   // تحديث اللقب
   socket.on('set_nickname', (name) => {
@@ -66,65 +80,69 @@ io.on('connection', (socket) => {
     });
   });
 
-  // استقبال الرسائل والأوامر
+  // ✅ التبديل بين غرف مُسبقة فقط
+  socket.on('switch_room', (target) => {
+    const room = String(target || '').trim().toLowerCase();
+    if (!isAllowed(room)) {
+      socket.emit('system_message', `Room "${room}" is not allowed`);
+      return;
+    }
+    if (room === currentRoom) return;
+
+    leaveRoom(socket, currentRoom);
+    io.to(currentRoom).emit('system_message', `${nickname} left the room`);
+
+    currentRoom = room;
+    joinRoom(socket, currentRoom);
+    socket.emit('room_changed', currentRoom);
+    io.to(currentRoom).emit('system_message', `${nickname} joined ${currentRoom}`);
+
+    // حدّث القائمة للجميع
+    io.emit('rooms_list', getRoomsSummary());
+  });
+
+  // رجوع إلى general
+  socket.on('leave_room', () => {
+    if (currentRoom !== 'general') {
+      leaveRoom(socket, currentRoom);
+      io.to(currentRoom).emit('system_message', `${nickname} left the room`);
+      currentRoom = 'general';
+      joinRoom(socket, currentRoom);
+      socket.emit('room_changed', 'general');
+      io.to('general').emit('system_message', `${nickname} joined general`);
+      io.emit('rooms_list', getRoomsSummary());
+    }
+  });
+
+  // طلب القائمة يدويًا
+  socket.on('get_rooms', () => {
+    socket.emit('rooms_list', getRoomsSummary());
+  });
+
+  // استقبال الرسائل (بدون أوامر نصية /join نهائيًا)
   socket.on('chat_message', (msg) => {
     const text = String(msg || '').trim();
     if (!text) return;
 
-    // أوامر
-    if (text.startsWith('/join ')) {
-      const newRoom = text.substring(6).trim().replace(/\s+/g, '-').toLowerCase().slice(0, 30);
-      if (!newRoom) {
-        socket.emit('system_message', 'Invalid room name');
-        return;
-      }
-      // غادر الحالية
-      leaveRoom(socket, currentRoom);
-      io.to(currentRoom).emit('system_message', `${nickname} left the room`);
-
-      // انضم للجديدة
-      currentRoom = newRoom;
-      joinRoom(socket, currentRoom);
-      socket.emit('room_changed', currentRoom);
-      io.to(currentRoom).emit('system_message', `${nickname} joined ${currentRoom}`);
+    // لو رسالة تبدأ بشرطة / اعتبرها غير مدعومة الآن
+    if (text.startsWith('/')) {
+      socket.emit('system_message', 'Text commands are disabled. Use the buttons above.');
       return;
     }
 
-    if (text === '/leave') {
-      if (currentRoom !== 'general') {
-        leaveRoom(socket, currentRoom);
-        io.to(currentRoom).emit('system_message', `${nickname} left the room`);
-        currentRoom = 'general';
-        joinRoom(socket, currentRoom);
-        socket.emit('room_changed', 'general');
-        io.to('general').emit('system_message', `${nickname} joined general`);
-      }
-      return;
-    }
-
-    if (text === '/rooms') {
-      const count = roomMembers.get(currentRoom)?.size || 0;
-      socket.emit(
-        'system_message',
-        `Current room: ${currentRoom}. Users here: ${count}. Use /join <roomname> to switch rooms`
-      );
-      return;
-    }
-
-    // رسالة عادية
     io.to(currentRoom).emit('chat_message', {
       nickname,
       msg: text,
       room: currentRoom,
       senderId: socket.id,
-      timestamp: Date.now(), // طابع وقت من السيرفر
+      timestamp: Date.now(),
     });
   });
 
-  // قطع الاتصال
   socket.on('disconnect', () => {
     io.to(currentRoom).emit('system_message', `${nickname} disconnected`);
     leaveRoom(socket, currentRoom);
+    io.emit('rooms_list', getRoomsSummary());
   });
 });
 
