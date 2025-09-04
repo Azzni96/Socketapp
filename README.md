@@ -30,7 +30,7 @@ Järjestelmäviestit kertovat, kuka liittyi, poistui tai vaihtoi nimimerkkiä.
 Voit aina palata päähuoneeseen (general) napilla Leave.
 
 🗂 Koodin selitys
-** 1) index.js (palvelin) **
+**1) index.js (palvelin)**
 
 express palvelee staattisia tiedostoja kansiosta public/.
 
@@ -60,7 +60,7 @@ leave_room: palaa takaisin päähuoneeseen.
 
 disconnect: yhteys katkeaa.
 
-** 2) public/index.html (käyttöliittymä) **
+**2) public/index.html (käyttöliittymä)**
 
 Käyttöliittymä sisältää:
 
@@ -76,7 +76,7 @@ Tekstikenttä + Send-painike
 
 Käyttää tyylejä (CSS) ulkoasuun.
 
-** 3) public/main.js (asiakaslogiikka) **
+**3) public/main.js (asiakaslogiikka)**
 
 Hallitsee tapahtumat selaimessa:
 
