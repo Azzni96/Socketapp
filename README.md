@@ -107,4 +107,8 @@ Asiakas (frontend): tarjoaa käyttöliittymän viestien kirjoittamiseen ja huone
 
 Kaikki viestit pysyvät huonekohtaisina: vain saman huoneen jäsenet näkevät ne.
 
+## Käyttöliittymän esimerkki
+
+![Chat UI screenshot](./public/socketio-chat-screenshot.png)
+
 
