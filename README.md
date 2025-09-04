@@ -1,8 +1,8 @@
 # 💬 Socket.IO Chat -sovellus
-´´´
+```
 Tämä on yksinkertainen reaaliaikainen chat-sovellus, joka on toteutettu **Node.js**, **Express** ja **Socket.IO** -teknologioilla.  
 Käyttäjä voi antaa nimimerkin, liittyä huoneeseen ja keskustella muiden kanssa reaaliajassa.
-´´´
+```
 ---
 
 ## ⚙️ Miten ohjelma toimii
@@ -12,9 +12,10 @@ Käyttäjä voi antaa nimimerkin, liittyä huoneeseen ja keskustella muiden kans
    node index.js
     ```
 Avaa selaimessa osoite:
-´´´http://localhost:3000
+```
+http://localhost:3000
 
-´´´
+```
 
 Syötä nimimerkki (esim. Charlie).
 
