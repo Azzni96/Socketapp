@@ -109,6 +109,6 @@ Kaikki viestit pysyvät huonekohtaisina: vain saman huoneen jäsenet näkevät n
 
 ## Käyttöliittymän esimerkki
 
-![Chat UI screenshot](./public/socketio-chat-screenshot.png)
+![Chat UI screenshot](./public/chatapp.png)
 
 
