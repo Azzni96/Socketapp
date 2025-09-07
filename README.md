@@ -113,4 +113,20 @@ Kaikki viestit pysyvät huonekohtaisina: vain saman huoneen jäsenet näkevät n
 
 ![Chat UI screenshot](./public/chatapp.png)
 
+## Namespacet ja huoneet Socket.IO:ssa
+
+**Namespace** on palvelimen virtuaalinen osoite (esim. `/chat`, `/admin`), jonka avulla voidaan erottaa eri palvelut tai keskustelualueet toisistaan samalla palvelimella. Jokaisella namespacella on omat tapahtumansa ja yhteytensä.
+
+**Room (huone)** on ryhmä käyttäjiä saman namespacen sisällä. Viestit voidaan lähettää vain tietyn huoneen jäsenille, mutta kaikki huoneet kuuluvat aina johonkin namespaceen.
+
+**Tärkein ero:**
+- Namespace on "iso jako" (esim. eri palvelut tai isot keskustelualueet)
+- Huone on "pieni jako" saman namespacen sisällä (esim. aihe- tai kielikohtaiset kanavat)
+
+**Käyttöesimerkki:**
+- Voit luoda namespacen `/chat` yleiselle keskustelulle ja `/support` asiakastuelle.
+- Molemmissa voi olla omat huoneet (esim. `/chat` → tech, sports; `/support` → billing, technical)
+
+Näin voit erottaa eri palvelut ja silti jakaa käyttäjät pienempiin ryhmiin huoneiden avulla.
+
 
